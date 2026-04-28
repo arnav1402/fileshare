@@ -2,9 +2,11 @@ import jwt
 import time
 import boto3
 import json
+from jose import jwt, JWTError
+from datetime import datetime, timedelta
 from fastapi import HTTPException, Depends
-from fastapi.security import HTTPBearer
-from app.config import SECRET_KEY, ALGORITHM, READ_ROLE_ARN, WRITE_ROLE_ARN, S3_BUCKET, AWS_REGION
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from app.config import SECRET_KEY, ALGORITHM, READ_ROLE_ARN, WRITE_ROLE_ARN, S3_BUCKET, AWS_REGION, ACCESS_TOKEN_EXPIRE_SECONDS
 
 security = HTTPBearer()
 sts = boto3.client("sts", region_name=AWS_REGION)
@@ -13,17 +15,31 @@ sts = boto3.client("sts", region_name=AWS_REGION)
 ADMIN_EMAIL = "admin@fileshare.com"
 ADMIN_PASSWORD = "password123"
 
+
 def login(email: str, password: str):
-    if email != ADMIN_EMAIL or password != ADMIN_PASSWORD:
-        raise HTTPException(401, "Invalid credentials")
+    # 🔥 Replace with DB later
+    if email != "admin@fileshare.com" or password != "password123":
+        raise HTTPException(status_code=401, detail="Invalid credentials")
 
     payload = {
         "sub": email,
-        "exp": int(time.time()) + 3600
+        "exp": datetime.utcnow() + timedelta(seconds=ACCESS_TOKEN_EXPIRE_SECONDS)
     }
 
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return token
 
+
+# 🔍 Verify JWT token
+def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload  # contains "sub" (email)
+
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
 def verify_token(token=Depends(security)):
     try:
         decoded = jwt.decode(token.credentials, SECRET_KEY, algorithms=[ALGORITHM])
