@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { api } from "../api/api";
+import { FiLink, FiCheck, FiRefreshCw, FiDownload, FiLogOut, FiAlertCircle } from "react-icons/fi";
 import FileUpload from "../components/FileUpload";
+import "./Room.css";
 
 export default function Room() {
     const [roomId, setRoomId] = useState("");
@@ -9,23 +11,28 @@ export default function Room() {
     const [role, setRole] = useState(null);
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const joinRoom = async () => {
+        setError("");
+        if (!roomId.trim() || !accessId.trim()) {
+            setError("Room ID and Access ID are required");
+            return;
+        }
+
         try {
             const res = await api.enterRoom(roomId, accessId);
 
             if (res.role) {
                 setJoined(true);
                 setRole(res.role);
-                
-                // ✅ Load files after joining
                 fetchFiles();
             } else {
-                alert("Failed to join room");
+                setError("Failed to join room");
             }
         } catch (err) {
             console.error("Error joining room:", err);
-            alert("Error joining room: " + err.message);
+            setError("Error joining room: " + err.message);
         }
     };
 
@@ -36,7 +43,7 @@ export default function Room() {
             setFiles(res.files || []);
         } catch (err) {
             console.error("Error fetching files:", err);
-            alert("Error loading files");
+            setError("Error loading files");
         } finally {
             setLoading(false);
         }
@@ -47,12 +54,11 @@ export default function Room() {
             const res = await api.getDownloadUrl(roomId, filename);
             
             if (res.url) {
-                // Open download URL in new tab
                 window.open(res.url, "_blank");
             }
         } catch (err) {
             console.error("Error downloading file:", err);
-            alert("Error downloading file");
+            setError("Error downloading file");
         }
     };
 
@@ -62,99 +68,137 @@ export default function Room() {
         setFiles([]);
         setRoomId("");
         setAccessId("");
+        setError("");
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === "Enter") {
+            joinRoom();
+        }
     };
 
     return (
         <div className="center">
-            <div className="content">
-                {!joined ? (
-                    <div>
-                        <h2>🔗 Join a Room</h2>
-                        <p style={{ marginBottom: "30px" }}>Enter the Room ID and Access ID to join</p>
+            {!joined ? (
+                <div className="container">
+                    <h1>Join a Room</h1>
+                    <p className="subtitle">Enter the Room ID and Access ID to join a file sharing room</p>
 
-                        <input
-                            placeholder="Enter Room ID"
-                            value={roomId}
-                            onChange={(e) => setRoomId(e.target.value)}
-                        />
-
-                        <input
-                            placeholder="Enter Access ID"
-                            value={accessId}
-                            onChange={(e) => setAccessId(e.target.value)}
-                        />
-
-                        <button onClick={joinRoom} style={{ width: "100%", maxWidth: "100%", marginTop: "20px" }}>
-                            ✓ Join Room
-                        </button>
-                    </div>
-                ) : (
-                    <div>
-                        <div className={`room-status ${role === "read" ? "read" : ""}`}>
-                            ✅ Joined as {role === "write" ? "📝 Editor" : "👁️ Viewer"}
+                    <div className="form-group">
+                        <div className="input-wrapper">
+                            <FiLink className="input-icon" />
+                            <input
+                                className="form-input"
+                                placeholder="Room ID"
+                                value={roomId}
+                                onChange={(e) => setRoomId(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                            />
                         </div>
 
-                        <hr />
+                        <div className="input-wrapper">
+                            <FiCheck className="input-icon" />
+                            <input
+                                className="form-input"
+                                placeholder="Access ID"
+                                value={accessId}
+                                onChange={(e) => setAccessId(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                            />
+                        </div>
+                    </div>
 
-                        {/* ✅ File Upload (write users only) */}
-                        <FileUpload 
-                            roomId={roomId} 
-                            accessId={accessId}
-                            role={role}
-                            onUploadComplete={fetchFiles}
-                        />
+                    {error && <p className="error-message">{error}</p>}
 
-                        <hr />
+                    <button 
+                        className="join-button"
+                        onClick={joinRoom}
+                    >
+                        <FiCheck /> Join Room
+                    </button>
 
-                        {/* ✅ File List with Refresh */}
-                        <h3>📂 Files in Room</h3>
-                        
+                    <p className="back-link">
+                        Back to <span onClick={() => window.location.href = "/"} className="home-link">Home</span>
+                    </p>
+                </div>
+            ) : (
+                <div className="room-container">
+                    <div className="room-header">
+                        <div>
+                            <h1>Room Connected</h1>
+                            <p className="role-badge" data-role={role}>
+                                {role === "write" ? "Editor" : "Viewer"}
+                            </p>
+                        </div>
                         <button 
-                            onClick={fetchFiles}
-                            disabled={loading}
-                        >
-                            🔄 Refresh Files
-                        </button>
-
-                        {loading ? (
-                            <p style={{ marginTop: "20px" }}><em>Loading files...</em></p>
-                        ) : files.length === 0 ? (
-                            <div className="info-box" style={{ marginTop: "20px" }}>
-                                No files in this room yet
-                            </div>
-                        ) : (
-                            <ul style={{ marginTop: "20px" }}>
-                                {files.map((file, index) => (
-                                    <li key={index}>
-                                        <strong>📄 {file.filename}</strong>
-                                        <small>
-                                            Size: {(file.size / 1024).toFixed(2)} KB | 
-                                            Modified: {new Date(file.last_modified).toLocaleString()}
-                                        </small>
-                                        <br />
-                                        <button 
-                                            onClick={() => downloadFile(file.filename)}
-                                            style={{ marginTop: "8px" }}
-                                        >
-                                            ⬇️ Download
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-
-                        <hr />
-
-                        <button 
+                            className="leave-btn"
                             onClick={handleLeaveRoom}
-                            className="danger"
-                            style={{ marginTop: "20px" }}
                         >
-                            Leave Room
+                            <FiLogOut /> Leave Room
                         </button>
                     </div>
-                )}
-            </div>
+
+                    <div className="room-content">
+                        {/* File Upload Section */}
+                        {role === "write" && (
+                            <div className="section">
+                                <FileUpload 
+                                    roomId={roomId} 
+                                    accessId={accessId}
+                                    role={role}
+                                    onUploadComplete={fetchFiles}
+                                />
+                            </div>
+                        )}
+
+                        {/* Files Section */}
+                        <div className="section">
+                            <div className="section-header">
+                                <h2>Files</h2>
+                                <button 
+                                    className="refresh-btn"
+                                    onClick={fetchFiles}
+                                    disabled={loading}
+                                >
+                                    <FiRefreshCw /> Refresh
+                                </button>
+                            </div>
+
+                            {error && <p className="error-message">{error}</p>}
+
+                            {loading ? (
+                                <div className="loading-state">
+                                    <p>Loading files...</p>
+                                </div>
+                            ) : files.length === 0 ? (
+                                <div className="empty-state">
+                                    <FiAlertCircle />
+                                    <p>No files in this room yet</p>
+                                </div>
+                            ) : (
+                                <div className="files-list">
+                                    {files.map((file, index) => (
+                                        <div key={index} className="file-item">
+                                            <div className="file-info">
+                                                <p className="file-name">{file.filename}</p>
+                                                <small className="file-meta">
+                                                    {(file.size / 1024).toFixed(2)} KB • {new Date(file.last_modified).toLocaleDateString()}
+                                                </small>
+                                            </div>
+                                            <button 
+                                                className="download-btn"
+                                                onClick={() => downloadFile(file.filename)}
+                                            >
+                                                <FiDownload /> Download
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
