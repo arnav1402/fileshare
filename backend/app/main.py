@@ -6,7 +6,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://file-sharev2.vercel.app"],  
+    allow_origins=["https://file-sharev2.vercel.app", "https://oyster-untamed-kite.ngrok-free.dev "],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
