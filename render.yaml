@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: fileshare-backend
+    env: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 2
+    envVars:
+      - key: AWS_REGION
+        value: eu-north-1
+      - key: S3_BUCKET
+        value: fileshare-room
+      - key: READ_ROLE_ARN
+        value: arn:aws:iam::411072614445:role/fileshare-readonly-role
+      - key: WRITE_ROLE_ARN
+        value: arn:aws:iam::411072614445:role/fileshare-upload-role
+      - key: DYNAMO_TABLE
+        value: fileshare-rooms
+      - key: SECRET_KEY
+        value: mydevsecretkey123
+      - key: FRONTEND_URL
+        value: https://fileshare-frontend.vercel.app
+      - key: PYTHON_VERSION
+        value: "3.11"
