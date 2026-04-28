@@ -5,15 +5,22 @@ export default function Home() {
 
     return (
         <div className="center">
-            <h1>FileShare</h1>
+            <div className="container">
+                <h1>🚀 FileShare</h1>
+                <p style={{ fontSize: "1.1rem", marginBottom: "40px" }}>
+                    Secure file sharing made simple
+                </p>
 
-            <button onClick={() => navigate("/login")}>
-                CREATE A ROOM
-            </button>
+                <div className="home-buttons">
+                    <button onClick={() => navigate("/login")}>
+                        ➕ CREATE A ROOM
+                    </button>
 
-            <button onClick={() => navigate("/room")}>
-                JOIN EXISTING ROOM
-            </button>
+                    <button className="secondary" onClick={() => navigate("/room")}>
+                        🔗 JOIN EXISTING ROOM
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

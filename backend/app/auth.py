@@ -40,12 +40,31 @@ def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
 
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
-def verify_token(token=Depends(security)):
+
+
+def assume_role(role: str, room_id: str):
+    """Assume a role and return temporary credentials"""
+    role_arn = READ_ROLE_ARN if role == "read" else WRITE_ROLE_ARN
+    
+    if not role_arn:
+        raise HTTPException(status_code=500, detail="Role ARN not configured")
+    
     try:
-        decoded = jwt.decode(token.credentials, SECRET_KEY, algorithms=[ALGORITHM])
-        return decoded
-    except:
-        raise HTTPException(401, "Invalid token")
+        response = sts.assume_role(
+            RoleArn=role_arn,
+            RoleSessionName=f"fileshare-{role}-{room_id}",
+            DurationSeconds=3600
+        )
+        
+        credentials = response["Credentials"]
+        return {
+            "access_key": credentials["AccessKeyId"],
+            "secret_key": credentials["SecretAccessKey"],
+            "session_token": credentials["SessionToken"],
+            "expiration": str(credentials["Expiration"])
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to assume role: {str(e)}")
 
 
 # 🔹 STS AssumeRole

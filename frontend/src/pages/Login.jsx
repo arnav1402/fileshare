@@ -31,20 +31,28 @@ export default function Login() {
 
     return (
         <div className="center">
-            <h2>Admin Login</h2>
+            <div className="container">
+                <h2>🔐 Admin Login</h2>
+                <p style={{ marginBottom: "30px" }}>Sign in to create and manage rooms</p>
 
-            <input
-                placeholder="Email"
-                onChange={(e) => setEmail(e.target.value)}
-            />
+                <input
+                    placeholder="Email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
 
-            <input
-                type="password"
-                placeholder="Password"
-                onChange={(e) => setPassword(e.target.value)}
-            />
+                <input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
 
-            <button onClick={handleLogin}>Login</button>
+                <button onClick={handleLogin} style={{ width: "100%", maxWidth: "100%", marginTop: "20px" }}>
+                    Login
+                </button>
+            </div>
         </div>
     );
 }
