@@ -1,4 +1,22 @@
-# File Sharing Project — Local Setup Guide
+# File Sharing Project\
+
+A role-based file sharing system that allows users to create rooms and collaborate with different access levels like Admin, Editor, and Viewer. It enables secure file management and real-time access control through a FastAPI backend and a React frontend.
+
+### Create Room (Dashboard)
+
+![Create Room](assets/create_room.png)
+
+### Admin Room
+
+![Admin Room](assets/admin_room.png)
+
+### Editor Room
+
+![Editor Room](assets/editor_room.png)
+
+### Viewer Room
+
+![Viewer Room](assets/viewer_room.png)
 
 This project has two parts:
 
