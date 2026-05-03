@@ -1,0 +1,12 @@
+AWS_REGION=aws_region_where_resources_are_located
+S3_BUCKET=name_for_room_storage
+
+READ_ROLE_ARN=arn:aws:iam::<AWS_ACCOUNT_ID>:role/readonly-role
+WRITE_ROLE_ARN=arn:aws:iam::<AWS_ACCOUNT_ID>:role/upload-role
+
+DYNAMO_TABLE=table_name_for_room_metadata
+
+SECRET_KEY=super_secret_key_for_jwt
+
+AWS_SECRET_ACCESS_KEY=Access_key_for_aws_user_with_permissions_to_s3_and_dynamo
+AWS_ACCESS_KEY_ID=Access_key_id_for_aws_user_with_permissions_to_s3_and_dynamo
