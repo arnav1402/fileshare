@@ -61,7 +61,7 @@ pip install -r requirements.txt
 Run backend server:
 
 ```bash
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 Backend will run on:
@@ -185,7 +185,7 @@ Terminal 1:
 ```bash
 cd backend
 source .venv/bin/activate
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 Terminal 2:
